@@ -116,7 +116,7 @@ public:
 
         --len;
         if (len == cap / 4) {
-            *this->resize(cap / 4);
+            this->resize(cap / 4);
         }
     }
 };

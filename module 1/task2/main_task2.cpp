@@ -1,53 +1,69 @@
 #include <iostream>
 #include "../vector/vector.h"
 
-// принимает сам массив, диапазон и число, которое ищем
-int binSearch(const vector<int> &vec, int num, const std::pair<int, int> &scope) {
-    int l = scope.first, r = scope.second;
-    while (l < r) {
-        auto m = (l + r) / 2;
-        if (vec[m] > num)
-            r = m;
-        else
-            l = m+1;
-    }
-    if (vec[l-1] == num)
-        return l-1;
+class SearchIntersection{
+private:
+    vector<int> A;
+    vector<int> B;
+    vector<int> answer;
 
-    return -1;
-}
+    // принимает сам массив, диапазон и число, которое ищем
+    int binSearch(int num, const std::pair<int, int> &scope) {
+        auto l = scope.first, r = scope.second;
 
-int expSearch(const vector<int> &vec, int num) {
-    if (vec.size() == 0) {
+        while (l < r) {
+            auto m = (l + r) / 2;
+            if (A[m] > num)
+                r = m;
+            else
+                l = m+1;
+        }
+        if (A[l-1] == num)
+            return l-1;
+
         return -1;
     }
-    int range = 1;
-    while (range < vec.size() && vec[range] < num) {
-        range *= 2;
-    }
 
-    return binSearch(vec, num, {range / 2, std::min(range + 1, (int)vec.size())});
-}
+    int expSearch(int num) {
+        if (A.size() == 0) {
+            return -1;
+        }
 
-void Search(const vector<int> &A, const vector<int> &B, vector<int> &ans) {
-    for (int i = 0; i < B.size(); ++i) {
-        auto ind = expSearch(A, B[i]);
-        if (ind == -1)
-            continue;
-        ans.push_back(A[ind]);
+        auto range = 1;
+        while (range < A.size() && A[range] < num) {
+            range *= 2;
+        }
+
+        auto end = std::min(range + 1, (int)A.size());
+
+        return binSearch(num, {range / 2, end});
     }
-}
+    void Intersection() {
+        for (int i = 0; i < B.size(); ++i) {
+            auto ind = expSearch(B[i]);
+            if (ind == -1)
+                continue;
+
+            answer.push_back(A[ind]);
+        }
+
+    }
+public:
+    SearchIntersection(std::istream &in, std::ostream &out){
+        int N1, N2;
+        in >> N1;
+        in >> N2;
+
+        A.input(in, N1);
+        B.input(in, N2);
+
+        Intersection();
+
+        answer.out(out);
+    }
+};
+
 
 int main() {
-    int N1, N2;
-    std::cin >> N1;
-    std::cin >> N2;
-
-    vector<int> A, B, answer;
-    A.input(std::cin, N1);
-    B.input(std::cin, N2);
-
-
-    Search(A, B, answer);
-    answer.out(std::cout);
+   SearchIntersection Ans(std::cin, std::cout);
 }
