@@ -48,6 +48,7 @@ class heap{
         }
     }
 public:
+    heap() = default;
     heap(const Compare& cmp) : cmp(cmp){}
     void out(){
         while (data.size()){
