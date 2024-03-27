@@ -7,16 +7,14 @@
 
 //#include "../vector/vector.h"
 #include <iostream>
-#include <vector>
+#include "../vector/vector.h"
+#include "../functor/functor.h"
 
-template <typename T>
-using cmpFunc = bool(*)(T, T);
 
-template <typename T>
+template <typename T, class Compare = BaseFunctor<T>>
 class heap{
-    std::vector<T> data;
-    cmpFunc<T> cmp;
-
+    Compare cmp;
+    vector<T> data;
     void siftDown(int index){
         T leftSon = 2 * index + 1;
         T rightSon = 2 * index + 2;
@@ -50,21 +48,7 @@ class heap{
         }
     }
 public:
-    heap(cmpFunc<T> cmp):cmp(cmp){
-        int N;
-        std::cin >> N;
-
-        for (int i = 0; i < N; ++i){
-            int size;
-            std::cin >> size;
-
-            for (int j = 0; j < size; ++j){
-                T elem;
-                std::cin >> elem;
-                insert(elem);
-            }
-        }
-    }
+    heap(const Compare& cmp) : cmp(cmp){}
     void out(){
         while (data.size()){
             std::cout << ExtractHead() << " ";
@@ -78,7 +62,6 @@ public:
     T PeekHead() const{
         return data[0];
     }
-
     T ExtractHead(){
         std::swap(data[0], data[data.size() - 1]);
         auto head = data[data.size() - 1];

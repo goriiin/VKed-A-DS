@@ -1,11 +1,11 @@
 #include <iostream>
-#include "../DataStr/heap/heap.h"
+#include "../classes/functor/functor.h"
+#include "../classes/heap/heap.h"
+#include "../classes/pair/pair.h"
 
-bool cmp(int a, int b){
-    return a < b;
-}
+
+
 
 int main() {
-    heap<int> h(cmp);
-    h.out();
+    heap<pair<int, > h;
 }
