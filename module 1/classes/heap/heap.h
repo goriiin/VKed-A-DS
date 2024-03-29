@@ -8,16 +8,15 @@
 //#include "../vector/vector.h"
 #include <iostream>
 #include "../vector/vector.h"
-#include "../functor/functor.h"
-
+#include "../random/functor.h"
 
 template <typename T, class Compare = BaseFunctor<T>>
 class heap{
     Compare cmp;
     vector<T> data;
     void siftDown(int index){
-        T leftSon = 2 * index + 1;
-        T rightSon = 2 * index + 2;
+        int leftSon = 2 * index + 1;
+        int rightSon = 2 * index + 2;
 
         int minIndex = index;
         if (leftSon < data.size() && cmp(data[leftSon], data[minIndex]))
@@ -56,14 +55,14 @@ public:
         }
         std::cout << std::endl;
     }
-    void insert(T elem){
+    void insert(const T& elem){
         data.push_back(elem);
         siftUp(data.size()-1);
     }
-    T PeekHead() const{
+    T& PeekHead() const{
         return data[0];
     }
-    T ExtractHead(){
+    T ExtractHead() {
         std::swap(data[0], data[data.size() - 1]);
         auto head = data[data.size() - 1];
 

@@ -28,6 +28,23 @@ public:
     }
 
     vector() = default;
+    vector& operator=(const vector& other) {
+        if (this == &other) {
+            return *this;
+        }
+
+        delete[] data;
+
+        len = other.len;
+        cap = other.cap;
+        data = new T[cap];
+
+        for (unsigned int i = 0; i < len; ++i) {
+            data[i] = other.data[i];
+        }
+
+        return *this;
+    }
 
     explicit vector(int size) : data(new T[size]), cap(size) {}
 
@@ -57,7 +74,7 @@ public:
         return cap;
     }
 
-    void resize(unsigned int new_cap) {
+    void resize(int new_cap) {
         T *new_data = new T[new_cap];
         for (int i = 0; i < len & i < new_cap; ++i) {
             new_data[i] = data[i];
@@ -99,12 +116,12 @@ public:
         data = new_data;
     }
 
-    void push_back(T num) {
-        if (len == cap) {
-            if (cap == 0)
-                this->resize(1);
-            else
-                this->resize(cap * 2);
+    void push_back(const T& num) {
+        if (cap == 0){
+            this->resize(1);
+        }
+        else if (len == cap) {
+            this->resize(cap * 2);
         }
 
         data[len++] = num;
