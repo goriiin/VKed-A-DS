@@ -7,7 +7,7 @@
 
 template <typename T>
 struct BaseFunctor {
-    bool operator () (const T& l, const T&r){
+    bool operator () (const T& l, const T& r){
         return l < r;
     }
 };
