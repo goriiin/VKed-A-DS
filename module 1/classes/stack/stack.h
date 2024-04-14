@@ -5,37 +5,34 @@
 #ifndef MODULE_1_STACK_H
 #define MODULE_1_STACK_H
 
-
 #include "../vector/vector.h"
 
+template<typename T>
 class stack {
-    vector<int> data;
+    vector<T> data;
 public:
-    void push(int num);
-    int pop();
-    int size() const;
-    bool empty() const;
+    void push(T num) {
+        data.push_back(num);
+    }
+
+    T pop() {
+        auto num = data[data.size() - 1];
+        data.pop_back();
+
+        return num;
+    }
+
+    T top(){
+        return data[data.size()-1];
+    }
+
+    T size() const {
+        return data.size();
+    }
+
+    bool empty() const {
+        return data.empty();
+    }
 };
-
-void stack::push(int num) {
-    data.push_back(num);
-}
-
-int stack::pop() {
-    if (data.size() == 0)
-        return -1;
-    auto num = data[data.size()-1];
-    data.pop_back();
-
-    return num;
-}
-
-int stack::size() const{
-    return data.size();
-}
-
-bool stack::empty() const{
-    return data.empty();
-}
 
 #endif //MODULE_1_STACK_H

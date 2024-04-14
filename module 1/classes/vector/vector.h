@@ -66,11 +66,11 @@ public:
         return len == 0;
     }
 
-    unsigned int size() const {
+    int size() const {
         return len;
     }
 
-    unsigned int capacity() const {
+    int capacity() const {
         return cap;
     }
 
