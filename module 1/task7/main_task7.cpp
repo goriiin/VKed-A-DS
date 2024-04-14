@@ -1,4 +1,8 @@
 #include <iostream>
+//7_3. Binary MSD для long long.
+//Дан массив неотрицательных целых 64-разрядных чисел.
+// Количество чисел не больше 106. Отсортировать массив методом MSD по битам (бинарный QuickSort).
+using uint64 = unsigned long long;
 
 template<typename T1, typename T2>
 struct pair {
@@ -141,66 +145,48 @@ public:
     }
 };
 
-void swap(uint64_t& l, uint64_t& r){
+template<typename T>
+void swap(T& l, T& r){
     auto tmp = l;
     l = r;
     r = tmp;
 }
 
-bool bit(uint64_t num, unsigned short digit) {
-    return ((num >> digit) & 1);
+bool bit(uint64 num, unsigned short digit) {
+    return num & ((uint64)1 << digit);
 }
 
-int BitsCount(uint64_t num) {
-    for (int i = sizeof(int64_t) * 8 - 1; i >= 0; --i) {
-        if (bit(num, i)) {
-            return i;
-        }
-    }
-    return 0;
-}
-
-int findMax(vector<uint64_t> &arr) {
-    uint64_t max = arr[0];
-    for (int i = 1; i < arr.size(); ++i) {
-        if (arr[i] > max) {
-            max = arr[i];
-        }
-    }
-    return (int)max;
-}
-
-void MSD_sort(vector<uint64_t> &arr, pair<int, int> lim, int bit_ptr) {
+void MSD_sort(vector<uint64> &arr, pair<int, int> lim, int bit_ptr) {
     if (lim.second <= lim.first || bit_ptr < 0)
         return;
+
     int l = lim.first, r = lim.second;
     while (l != r){
-        while(!bit(arr[l], bit_ptr) && l < r){++l;}
-        while (bit(arr[r], bit_ptr) && l < r){--r;}
-        if (l < r)
-            swap(arr[l], arr[r]);
+        while(!bit(arr[l], bit_ptr) && (l < r)) ++l;
+        while (bit(arr[r], bit_ptr) && (l < r)) --r;
+        swap(arr[l], arr[r]);
     }
-    if (!bit(arr[r], bit_ptr))
+
+    if (!bit(arr[lim.second], bit_ptr))
         ++r;
 
-    MSD_sort(arr, {lim.first, r-1}, --bit_ptr);
-    MSD_sort(arr, {r, lim.second}, --bit_ptr);
+    MSD_sort(arr, {lim.first, r-1}, bit_ptr - 1);
+    MSD_sort(arr, {r, lim.second}, bit_ptr - 1);
 }
 
-void answer() {
+void answer(std::istream& in, std::ostream& out)  {
     int N;
     std::cin >> N;
-    vector<uint64_t> arr;
+    vector<uint64> arr;
 
-    arr.input(std::cin, N);
-    int bit_ptr = BitsCount(findMax(arr));
+    arr.input(in, N);
 
-    MSD_sort(arr, {0, arr.size() - 1}, bit_ptr);
-    arr.out(std::cout);
+    MSD_sort(arr, {0, arr.size() - 1}, 63);
+    arr.out(out);
 }
 
 int main() {
-    answer();
+    answer(std::cin, std::cout);
     return 0;
 }
 
