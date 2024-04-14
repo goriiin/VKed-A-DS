@@ -141,11 +141,17 @@ public:
     }
 };
 
-bool bit(int64_t num, unsigned short digit) {
+void swap(uint64_t& l, uint64_t& r){
+    auto tmp = l;
+    l = r;
+    r = tmp;
+}
+
+bool bit(uint64_t num, unsigned short digit) {
     return ((num >> digit) & 1);
 }
 
-int BitsCount(int64_t num) {
+int BitsCount(uint64_t num) {
     for (int i = sizeof(int64_t) * 8 - 1; i >= 0; --i) {
         if (bit(num, i)) {
             return i;
@@ -154,8 +160,8 @@ int BitsCount(int64_t num) {
     return 0;
 }
 
-int findMax(vector<int64_t> &arr) {
-    int64_t max = arr[0];
+int findMax(vector<uint64_t> &arr) {
+    uint64_t max = arr[0];
     for (int i = 1; i < arr.size(); ++i) {
         if (arr[i] > max) {
             max = arr[i];
@@ -164,16 +170,15 @@ int findMax(vector<int64_t> &arr) {
     return (int)max;
 }
 
-
-void MSD_sort(vector<int64_t> &arr, pair<int, int> lim, int bit_ptr) {
+void MSD_sort(vector<uint64_t> &arr, pair<int, int> lim, int bit_ptr) {
     if (lim.second <= lim.first || bit_ptr < 0)
         return;
     int l = lim.first, r = lim.second;
     while (l != r){
         while(!bit(arr[l], bit_ptr) && l < r){++l;}
         while (bit(arr[r], bit_ptr) && l < r){--r;}
-
-        std::swap(arr[l], arr[r]);
+        if (l < r)
+            swap(arr[l], arr[r]);
     }
     if (!bit(arr[r], bit_ptr))
         ++r;
@@ -185,15 +190,13 @@ void MSD_sort(vector<int64_t> &arr, pair<int, int> lim, int bit_ptr) {
 void answer() {
     int N;
     std::cin >> N;
-    vector<int64_t> arr;
+    vector<uint64_t> arr;
 
     arr.input(std::cin, N);
     int bit_ptr = BitsCount(findMax(arr));
 
-  std::cout << BitsCount(21) << " " << BitsCount(49);
-
-//    MSD_sort(arr, {0, arr.size() - 1}, 63);
-//    arr.out(std::cout);
+    MSD_sort(arr, {0, arr.size() - 1}, bit_ptr);
+    arr.out(std::cout);
 }
 
 int main() {
