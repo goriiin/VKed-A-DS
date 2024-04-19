@@ -2,6 +2,8 @@
 //Хеш-функция строки должна быть реализована с помощью вычисления значения многочлена методом Горнера.
 //Начальный размер таблицы должен быть равным 8-ми. Перехеширование выполняйте при добавлении элементов в случае, когда коэффициент заполнения таблицы достигает 3/4.
 //Структура данных должна поддерживать операции добавления строки в множество, удаления строки из множества и проверки принадлежности данной строки множеству.
+
+
 //1_1. Для разрешения коллизий используйте квадратичное пробирование. i-ая проба
 //g(k, i)=g(k, i-1) + i (mod m), m - степень двойки.
 
@@ -11,7 +13,99 @@
 #include <string>
 #include <cassert>
 
-void answer(std::istream& in, std::ostream& out);
+/*
++ в
+OK
++dsgnmdf
+OK
++ fkdnbn
+OK
++d
+OK
++d
+FAIL
++d
+FAIL
++q
+OK
++q
+FAIL
++w
+OK
++e
+OK
++r
+OK
++r
+FAIL
++r
+FAIL
++t
+OK
++u
+OK
+
++u
+FAIL
++d
+FAIL
++s
+OK
++a
+OK
+- fkdnbn
+OK
+- fkdnbn
+FAIL
+? fkdnbn
+FAIL
+? t
+OK
+- t
+OK
++ t
+OK
+- t
+OK
++ t
+OK
++ t
+FAIL
+- a
+OK
++ a
+OK
++ a
+FAIL
+? a
+OK
+? dsgnmdf
+OK
+- dsgnmdf
+OK
+- dsgnmdf
+FAIL
+ */
+
+/*+ ok
+OK
++ ok
+FAIL
+- ok
+OK
+? ok
+FAIL
++ a
+OK
++ a
+FAIL
++ a
+FAIL
++ a
+FAIL
+ */
+
+void answer(std::istream &in, std::ostream &out);
 
 int main() {
     answer(std::cin, std::cout);
@@ -20,9 +114,9 @@ int main() {
 
 template<typename T>
 struct [[maybe_unused]] Base_Hasher {
-    size_t operator () (const T &item, size_t m = 8, size_t a = 67) {
+    size_t operator()(T item, size_t m = 8, size_t a = 241) {
         size_t hash = 0;
-        while (item != 0) {
+        while (item > 0) {
             hash = (hash * a + item % 10) % m;
             item /= 10;
         }
@@ -30,8 +124,8 @@ struct [[maybe_unused]] Base_Hasher {
     }
 };
 
-struct String_Hasher{
-    size_t operator () (const std::string &str, size_t m = 8, size_t a = 67){
+struct String_Hasher {
+    size_t operator()(const std::string &str, size_t m = 8, size_t a = 241) {
         size_t hash = 0;
         for (auto &ch: str) {
             hash = (hash * a + ch) % m;
@@ -46,133 +140,132 @@ enum status {
     nil,
     key
 };
+
 template<typename T>
 struct table_item {
     T data;
     status flag;
 
-    table_item() :data(""), flag(status::nil){}
-    table_item(T _data, status _flag): data(std::move(_data)), flag(_flag) {}
+    table_item() : flag(status::nil) {}
 
-    table_item(table_item<T>&& item)  noexcept {
+    table_item(T _data, status _flag) : data(std::move(_data)), flag(_flag) {}
+
+    table_item(table_item<T> &&item) noexcept {
         data = std::move(item.data);
         flag = std::move(item.flag);
     }
 
-    table_item<T>& operator = (table_item&& item) noexcept {
+    table_item<T> &operator=(table_item &&item) noexcept {
         this->data = std::move(item.data);
         this->flag = std::move(item.flag);
         return *this;
     }
 };
 
-template<typename T, class Hasher = Base_Hasher<T>>
+template<typename T, class Hasher=Base_Hasher<T>>
 class HashTable {
     std::vector<table_item<T>> data{};
-    size_t elements;
     size_t max_size;
     Hasher hasher;
+    size_t items_count = 0;
+    double RATIO  = ((double)3)/4;
 
     void rehash() {
-
+        auto new_table = HashTable<T, Hasher>(data.size() * 2);
+        for (size_t i = 0; i < data.size(); ++i) {
+            if (data[i].flag == status::key)
+                new_table.add(std::move(data[i].data));
+        }
+        *this = std::move(new_table);
+    }
+    size_t next(size_t index, size_t iteration){
+        return (index + iteration * iteration)%data.size();
     }
 public:
-    HashTable() : elements(0), max_size(6) {
-        data.reserve(8);
+    HashTable() {
+        data.resize(8);
+        max_size = static_cast<int>(8 * RATIO);
     }
 
-    [[maybe_unused]] explicit HashTable(size_t _size) : elements(0), max_size(_size * 3 / 4) {
-        data.reserve(_size);
+    [[maybe_unused]] explicit HashTable(size_t _size) {
+        data.resize(_size);
+        max_size = static_cast<size_t>(RATIO * _size);
     }
 
-    bool del(const std::string& str){
-        size_t ind = hasher(str);
+    bool del(const T &item) {
+        size_t ind = hasher(item, data.size());
+
         for (size_t i = 0; i < data.size(); ++i) {
-            ind = (ind + i*i)%data.size();
-            if (data[ind].flag == status::nil)
+            ind = next(ind, i);
+
+            if (data[ind].flag == status::nil) {
                 return false;
-            if (data[i].data == str){
-                if (data[i].flag == status::key){
-                    data[i].flag = status::deleted;
-                    --elements;
-                    return true;
-                }
-                if (data[i].flag == status::deleted){
-                    return false;
-                }
+            }
+
+            if (data[ind].flag == status::key && data[ind].data == item) {
+                data[ind].flag = status::deleted;
+                --items_count;
+                return true;
             }
         }
+
         return false;
     }
 
-    bool add(const std::string& str) {
-        int insert_ind = -1;
-        size_t ind = hasher(str);
+    bool add(const T &item) {
+        int deleted_ind = -1;
+        size_t ind = hasher(item, data.size());
+        auto insert_item = table_item(item, status::key);
 
-        auto insert_item = table_item(str, status::key);
         for (size_t i = 0; i < data.size(); ++i) {
-            ind = (ind + i*i)%data.size();
-            if (data[ind].data == str){
-                if (data[ind].flag == status::key)
-                    return false;
-
-                else if (insert_ind > 0)
-                    data[insert_ind] = std::move(insert_item);
-                else
-                    data[ind] = std::move(insert_item);
-                return true;
+            ind = next(ind, i);
+            if (data[ind].flag == status::key && data[ind].data == item) {
+                return false;
             }
 
-            if (data[ind].flag == status::nil){
-                if (elements == max_size)
+            if (data[ind].flag == status::nil) {
+                ++items_count;
+                if (items_count >= max_size)
                     rehash();
 
-                if (insert_ind > 0)
-                    data[insert_ind] = std::move(insert_item);
+                if (deleted_ind > 0)
+                    data[deleted_ind] = std::move(insert_item);
                 else
                     data[ind] = std::move(insert_item);
-                ++elements;
+
                 return true;
             }
-            if (insert_ind < 0 && i == status::deleted){
-                insert_ind =static_cast<int>(i);
+
+            if (deleted_ind < 0 && data[i].flag == status::deleted) {
+                deleted_ind = static_cast<int>(i);
             }
         }
         return false;
     }
 
-    bool has(const std::string &str) {
-        size_t ind = hasher(str);
+    bool has(const T &item) {
+        size_t ind = hasher(item, data.size());
         for (size_t i = 0; i < data.size(); ++i) {
-            ind = (ind + i*i)%data.size();
-            if (ind == data.size())
-                ind = 0;
-
+            ind = next(ind, i);
             if (data[ind].flag == status::nil)
                 return false;
 
-            if (data[ind].data == str){
-                if (data[ind].flag == status::key)
-                    return true;
-                if (data[ind].flag == status::deleted)
-                    return false;
+            if (data[ind].flag == status::key && data[ind].data == item) {
+                return true;
             }
         }
         return false;
     }
 
-    bool operator[](const std::string &str) {
-        return has(str);
-    }
 };
 
-void answer(std::istream& in, std::ostream& out) {
+void answer(std::istream &in, std::ostream &out) {
     HashTable<std::string, String_Hasher> table;
 
-    std::string  word;
+    std::string word;
     char op;
-    while (in >> op >> word){
-        switch( op ) {
+    while (in >> op >> word) {
+        switch (op) {
             case '+':
                 out << (table.add(word) ? "OK" : "FAIL") << std::endl;
                 break;
@@ -183,9 +276,7 @@ void answer(std::istream& in, std::ostream& out) {
                 out << (table.has(word) ? "OK" : "FAIL") << std::endl;
                 break;
             default:
-                assert( false );
+                assert(false);
         }
     }
 }
-
-
