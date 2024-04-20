@@ -11,107 +11,22 @@
 #include <utility>
 #include <vector>
 #include <string>
-#include <cassert>
-
-/*
-+ в
-OK
-+dsgnmdf
-OK
-+ fkdnbn
-OK
-+d
-OK
-+d
-FAIL
-+d
-FAIL
-+q
-OK
-+q
-FAIL
-+w
-OK
-+e
-OK
-+r
-OK
-+r
-FAIL
-+r
-FAIL
-+t
-OK
-+u
-OK
-
-+u
-FAIL
-+d
-FAIL
-+s
-OK
-+a
-OK
-- fkdnbn
-OK
-- fkdnbn
-FAIL
-? fkdnbn
-FAIL
-? t
-OK
-- t
-OK
-+ t
-OK
-- t
-OK
-+ t
-OK
-+ t
-FAIL
-- a
-OK
-+ a
-OK
-+ a
-FAIL
-? a
-OK
-? dsgnmdf
-OK
-- dsgnmdf
-OK
-- dsgnmdf
-FAIL
- */
-
-/*+ ok
-OK
-+ ok
-FAIL
-- ok
-OK
-? ok
-FAIL
-+ a
-OK
-+ a
-FAIL
-+ a
-FAIL
-+ a
-FAIL
- */
 
 void answer(std::istream &in, std::ostream &out);
+
 
 int main() {
     answer(std::cin, std::cout);
     return 0;
 }
 
+
+
+enum status {
+    deleted,
+    nil,
+    key
+};
 template<typename T>
 struct [[maybe_unused]] Base_Hasher {
     size_t operator()(T item, size_t m = 8, size_t a = 241) {
@@ -125,7 +40,10 @@ struct [[maybe_unused]] Base_Hasher {
 };
 
 struct String_Hasher {
-    size_t operator()(const std::string &str, size_t m = 8, size_t a = 241) {
+    size_t operator()(const std::string &str, size_t m, size_t a = 241) {
+        if (m == 0)
+            return 0;
+
         size_t hash = 0;
         for (auto &ch: str) {
             hash = (hash * a + ch) % m;
@@ -133,12 +51,6 @@ struct String_Hasher {
         return hash;
     }
 
-};
-
-enum status {
-    deleted,
-    nil,
-    key
 };
 
 template<typename T>
@@ -166,45 +78,63 @@ template<typename T, class Hasher=Base_Hasher<T>>
 class HashTable {
     std::vector<table_item<T>> data{};
     size_t max_size;
-    Hasher hasher;
     size_t items_count = 0;
-    double RATIO  = ((double)3)/4;
+
+    Hasher hasher;
+    const double RATIO  = 0.75;
 
     void rehash() {
-        auto new_table = HashTable<T, Hasher>(data.size() * 2);
-        for (size_t i = 0; i < data.size(); ++i) {
-            if (data[i].flag == status::key)
-                new_table.add(std::move(data[i].data));
+        std::vector<table_item<T>> new_table;
+        new_table.resize(data.size() * 2);
+        items_count = 0;
+
+        for (auto& item : data){
+            if (item.flag == status::key){
+                ++items_count;
+                size_t index = hasher(item.data, new_table.size());
+                for (int i = 0; i < new_table.size(); ++i){
+                    index = next(index, i, new_table.size());
+                    if (new_table[index].flag == status::nil){
+                        new_table[index] = std::move(item);
+                        break;
+                    }
+                }
+            }
         }
-        *this = std::move(new_table);
+
+        data = std::move(new_table);
+        max_size = data.size() * RATIO;
     }
-    size_t next(size_t index, size_t iteration){
-        return (index + iteration * iteration)%data.size();
+
+    size_t next(const size_t& index,const size_t& iteration,const size_t& lim){
+        return (index + iteration * iteration)%lim;
     }
+
 public:
     HashTable() {
         data.resize(8);
         max_size = static_cast<int>(8 * RATIO);
+        items_count = 0;
     }
 
     [[maybe_unused]] explicit HashTable(size_t _size) {
         data.resize(_size);
-        max_size = static_cast<size_t>(RATIO * _size);
+        max_size = static_cast<size_t>((int)_size* RATIO);
+        items_count = 0;
     }
 
     bool del(const T &item) {
         size_t ind = hasher(item, data.size());
 
         for (size_t i = 0; i < data.size(); ++i) {
-            ind = next(ind, i);
+            ind = next(ind, i, data.size());
 
             if (data[ind].flag == status::nil) {
                 return false;
             }
-
             if (data[ind].flag == status::key && data[ind].data == item) {
                 data[ind].flag = status::deleted;
-                --items_count;
+
                 return true;
             }
         }
@@ -218,26 +148,33 @@ public:
         auto insert_item = table_item(item, status::key);
 
         for (size_t i = 0; i < data.size(); ++i) {
-            ind = next(ind, i);
+            ind = next(ind, i, data.size());
             if (data[ind].flag == status::key && data[ind].data == item) {
                 return false;
             }
 
             if (data[ind].flag == status::nil) {
+
                 ++items_count;
-                if (items_count >= max_size)
+                if (items_count > max_size){
                     rehash();
 
-                if (deleted_ind > 0)
-                    data[deleted_ind] = std::move(insert_item);
-                else
+                    ind = hasher(item, data.size());
                     data[ind] = std::move(insert_item);
+                }
+
+                else {
+                    if (deleted_ind > 0)
+                        data[deleted_ind] = std::move(insert_item);
+                    else
+                        data[ind] = std::move(insert_item);
+                }
 
                 return true;
             }
 
-            if (deleted_ind < 0 && data[i].flag == status::deleted) {
-                deleted_ind = static_cast<int>(i);
+            if (deleted_ind < 0 && data[ind].flag == status::deleted) {
+                deleted_ind = static_cast<int>(ind);
             }
         }
         return false;
@@ -246,7 +183,7 @@ public:
     bool has(const T &item) {
         size_t ind = hasher(item, data.size());
         for (size_t i = 0; i < data.size(); ++i) {
-            ind = next(ind, i);
+            ind = next(ind, i, data.size());
             if (data[ind].flag == status::nil)
                 return false;
 
@@ -276,7 +213,7 @@ void answer(std::istream &in, std::ostream &out) {
                 out << (table.has(word) ? "OK" : "FAIL") << std::endl;
                 break;
             default:
-                assert(false);
+                break;
         }
     }
 }
