@@ -1,10 +1,19 @@
+//2_3. Обход дерева в порядке post-order
+//Дано число N ≤ 104 и последовательность целых чисел из [-2^31..2^31]
+// длиной N. Требуется построить бинарное дерево, заданное наивным порядком
+// вставки. Т.е., при добавлении очередного числа K в дерево с корнем root,
+// если root→Key ≤ K, то узел K добавляется в правое поддерево root; иначе в
+// левое поддерево root. Выведите элементы в порядке post-order (снизу вверх).
+//
+//Рекурсия запрещена.
+
 #include <iostream>
 #include <stack>
 
-void answer();
+void answer(std::istream& in, std::ostream& out);
 
 int main() {
-    answer();
+    answer(std::cin, std::cout);
     return 0;
 }
 
@@ -57,6 +66,7 @@ public:
 
         Node<T>* tmp = root;
         Node<T>* parent = nullptr;
+
         while (tmp != nullptr){
             parent = tmp;
             if (item < tmp->data)
@@ -95,14 +105,14 @@ public:
 };
 
 
-void answer(){
+void answer(std::istream& in, std::ostream& out){
     Tree<int> tr;
     int N = 0;
     std::cin >> N;
     int m;
     for (int i = 0; i < N; ++i) {
-        std::cin >> m;
+        in >> m;
         tr.add(m);
     }
-    tr.post_order(std::cout);
+    tr.post_order(out);
 }
