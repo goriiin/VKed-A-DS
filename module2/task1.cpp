@@ -21,12 +21,12 @@ int main() {
 }
 
 
-
 enum status {
     deleted,
     nil,
     key
 };
+
 template<typename T>
 struct [[maybe_unused]] Base_Hasher {
     size_t operator()(T item, size_t m = 8, size_t a = 241) {
@@ -81,20 +81,20 @@ class HashTable {
     size_t items_count = 0;
 
     Hasher hasher;
-    const double RATIO  = 0.75;
+    const double RATIO = 0.75;
 
     void rehash() {
         std::vector<table_item<T>> new_table;
         new_table.resize(data.size() * 2);
         items_count = 0;
 
-        for (auto& item : data){
-            if (item.flag == status::key){
+        for (auto &item: data) {
+            if (item.flag == status::key) {
                 ++items_count;
                 size_t index = hasher(item.data, new_table.size());
-                for (int i = 0; i < new_table.size(); ++i){
+                for (int i = 0; i < new_table.size(); ++i) {
                     index = next(index, i, new_table.size());
-                    if (new_table[index].flag == status::nil){
+                    if (new_table[index].flag == status::nil) {
                         new_table[index] = std::move(item);
                         break;
                     }
@@ -106,8 +106,8 @@ class HashTable {
         max_size = data.size() * RATIO;
     }
 
-    size_t next(const size_t& index,const size_t& iteration,const size_t& lim){
-        return (index + iteration * iteration)%lim;
+    size_t next(const size_t &index, const size_t &iteration, const size_t &lim) {
+        return (index + iteration * iteration) % lim;
     }
 
 public:
@@ -119,7 +119,7 @@ public:
 
     [[maybe_unused]] explicit HashTable(size_t _size) {
         data.resize(_size);
-        max_size = static_cast<size_t>((int)_size* RATIO);
+        max_size = static_cast<size_t>((int) _size * RATIO);
         items_count = 0;
     }
 
@@ -156,14 +156,12 @@ public:
             if (data[ind].flag == status::nil) {
 
                 ++items_count;
-                if (items_count > max_size){
+                if (items_count > max_size) {
                     rehash();
 
                     ind = hasher(item, data.size());
                     data[ind] = std::move(insert_item);
-                }
-
-                else {
+                } else {
                     if (deleted_ind > 0)
                         data[deleted_ind] = std::move(insert_item);
                     else
