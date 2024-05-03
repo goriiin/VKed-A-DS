@@ -23,7 +23,7 @@ struct Node {
         delete right;
     }
 
-    explicit Node(T _key) : key(_key), left(nullptr), right(nullptr), height(0), count(0) {}
+    explicit Node(T _key) : key(_key), left(nullptr), right(nullptr), height(1), count(1) {}
 };
 
 template<typename T>
@@ -55,17 +55,17 @@ public:
 
     T kth_stat(size_t k) {
         auto node = root;
-        size_t left_count = get_count(node->left);
-        size_t a = 0, b = get_count(node);
-        while (k != a + left_count){
-            if (k < a + left_count){
-                b -= get_count(node->right);
+        size_t from = 0, to = node->count; //поиск в полуинтервале [from; to)
+        size_t node_left_size = get_count(node->left);
+        while (k != from + node_left_size) {
+            if (k < from + node_left_size) { //поиск в левом поддереве current_node
+                to -= get_count(node->right) + 1;
                 node = node->left;
-            } else {
-                a += left_count + 1;
+            } else { //поиск в правом поддереве current_node
+                from += node_left_size + 1;
                 node = node->right;
             }
-            left_count = get_count(node->left);
+            node_left_size = get_count(node->left);
         }
         return node->key;
     }
@@ -76,93 +76,95 @@ public:
 
 private:
     Node<T>* _erase(Node<T>* node, const T& value){
-        if (!node)
+        if (node == nullptr) {
             return nullptr;
-
-        auto cmp_res = cmp(value, node->key);
-
-        if (cmp_res == -1)
-            node->left = _erase(node->left, value);
-        else if (cmp_res == 1)
-            node->right = _erase(node->right, value);
-        else {
-            Node<T>* left = node->left;
-            Node<T>* right = node->right;
-
-            delete node;
-            if (!right){
-                return left;
-            }
-            Node<T>* min_node = find_min(right);
-            right = remove_min_node(right);
-
-            min_node->left = left;
-            min_node->right = right;
-
-            return balance(min_node);
+        }
+        switch (cmp(value, node->key)) {
+            case -1:
+                node->left = _erase(node->left, value);
+                break;
+            case 1:
+                node->right = _erase(node->right, value);
+                break;
+            default: //case 0: (equals)
+                auto left = node->left, right = node->right;
+                delete node;
+                if (right == nullptr) {
+                    return left;
+                }
+                Node<T> *right_min; //здесь будет указатель на минимальный узел правого поддерева удалённого узла node
+                right = remove_min_node(right, right_min); //передаём указатель на правое поддерево узла node и ссылку
+                right_min->left = left;
+                right_min->right = right;
+                return balance(right_min);
         }
         return balance(node);
     }
-    Node<T>* remove_min_node(Node<T>* node) {
-        if (!node->left) {
+    Node<T>* remove_min_node(Node<T>* node, Node<T>* min_node) {
+        if (node->left == nullptr) {
+            min_node = node; //запоминаем минимальный узел текущего поддерева
             return node->right;
         }
-
-        node->left = remove_min_node(node->left);
+        node->left = remove_min_node(node->left, min_node);
         return balance(node);
-    }
-
-    Node<T>* find_min(Node<T>* node) {
-        if (!node->left) {
-            return node;
-        }
-        return find_min(node->left);
     }
 
     Node<T>* _insert(Node<T>* node, T& value){
-        if (!node)
+        if (node == nullptr) {
             return new Node<T>(value);
-
-        if (value < node->key){
-            node->left = _insert(node->left, value);
-        }else{
-            node->right = _insert(node->right, value);
+        }
+        switch (cmp(value, node->key)) {
+            case -1:
+                node->left = _insert(node->left, value);
+                break;
+            case 1:
+                node->right = _insert(node->right, value);
+                break;
+            default:
+                return root;
         }
         return balance(node);
     }
 
     Node<T>* balance(Node<T>* node){
         fix(node);
-
-        auto bf = b_factor(node);
-        if (bf == 2){
-            if (b_factor(node->right) < 0)
-                node->right = rotate_right((node->right));
+        int8_t balance_factor = b_factor(node);
+        if (balance_factor == 2) {
+            if (b_factor(node->right)) {
+                node->right = rotate_right(node->right);
+            }
             return rotate_left(node);
-        }
-        if (bf == -2){
-            if (b_factor(node->left) > 0)
+        } else if (balance_factor == -2) {
+            if (b_factor(node->left)) {
                 node->left = rotate_left(node->left);
+            }
             return rotate_right(node);
+        } else {
+            return node;
         }
-        return node;
     }
 
     size_t get_height(Node<T>* node){
-        return ((node)? node->height : 0);
+        if (node == nullptr) {
+            return 0;
+        }
+        return node->height;
     }
 
     size_t get_count(Node<T>* node){
-        return ((node)? node->count : 0);
+        if (node == nullptr) {
+            return 0;
+        }
+        return node->count;
     }
 
     void fix(Node<T>* node){
-        node->height = std::max(get_height(node->left), get_height(node->right), cmp);
-        node->count = 1 + get_count(node->left) + get_height(node->right);
+        node->height = 1 + std::max(get_height(node->left), get_height(node->right));
+        node->count = 1 + get_count(node->left) + get_count(node->right);
     }
 
     int b_factor(Node<T>* node){
-        return get_height(node->left) - get_height(node->right);
+        return get_height(node->right) - get_height(node->left);
     }
 
     Node<T>* rotate_left(Node<T>* node){
@@ -170,8 +172,8 @@ private:
         node->right = ptr->left;
         ptr->left = node;
 
-        fix(ptr);
         fix(node);
+        fix(ptr);
         return ptr;
     }
 
