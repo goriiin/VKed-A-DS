@@ -65,7 +65,7 @@ ___
 struct Node {
     std::string product_name;
     int color;
-    int size;
+    int count;
 };
 ```
 ### Формат ввода
