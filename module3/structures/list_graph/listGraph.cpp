@@ -12,7 +12,7 @@ void ListGraph::AddEdge(int from, int to) {
 }
 
 int ListGraph::VerticesCount() const {
-    return (int)graph.size();
+    return (int) graph.size();
 }
 
 std::vector<int> ListGraph::GetNextVertices(int vertex) const {

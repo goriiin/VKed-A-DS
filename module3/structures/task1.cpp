@@ -99,16 +99,16 @@ int main() {
     graph.AddEdge(1, 5);
     graph.AddEdge(5, 1);
 
-    // MatrixGraph mg(graph);
+    // MatrixGraph mg(Graph);
 //
-//    dfs(graph, [](int v) { std::cout << "[dfs] v=" << v << std::endl; });
+//    dfs(Graph, [](int v) { std::cout << "[dfs] v=" << v << std::endl; });
 //
 //    std::cout << "-------------" << std::endl;
-//    bfs(graph, [](int v) { std::cout << "[bfs] v=" << v << std::endl; });
+//    bfs(Graph, [](int v) { std::cout << "[bfs] v=" << v << std::endl; });
 
 
 
-//    MatrixGraph graph1(graph);
+//    MatrixGraph graph1(Graph);
 //    dfs(graph1, [](int v) { std::cout << "[dfs] v=" << v << std::endl; });
 //
 //    std::cout << "-------------" << std::endl;
@@ -122,7 +122,7 @@ int main() {
     bfs(graph2, [](int v) { std::cout << "[bfs] v=" << v << std::endl; });
 
 
-//    ArcGraph graph3(graph);
+//    ArcGraph graph3(Graph);
 //    dfs(graph3, [](int v) { std::cout << "[dfs] v=" << v << std::endl; });
 //
 //    std::cout << "-------------" << std::endl;

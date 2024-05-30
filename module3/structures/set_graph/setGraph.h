@@ -9,15 +9,17 @@
 #include "../IGraph.h"
 #include <unordered_map>
 
-struct SetGraph : public IGraph{
+struct SetGraph : public IGraph {
 
-    explicit SetGraph(int n): count(n){}
+    explicit SetGraph(int n) : count(n) {}
+
     explicit SetGraph(const IGraph &other_graph) : count(other_graph.VerticesCount()) {
         for (int i = 0; i < other_graph.VerticesCount(); ++i) {
             next[i] = other_graph.GetNextVertices(i);
             prev[i] = other_graph.GetPrevVertices(i);
         }
     }
+
     ~SetGraph() override = default;
 
     void AddEdge(int from, int to) override;

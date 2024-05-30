@@ -9,12 +9,12 @@ void MatrixGraph::AddEdge(int from, int to) {
 }
 
 int MatrixGraph::VerticesCount() const {
-    return (int)graph.size();
+    return (int) graph.size();
 }
 
 std::vector<int> MatrixGraph::GetNextVertices(int vertex) const {
     std::vector<int> res;
-    for (int i = 0; i < VerticesCount(); ++i){
+    for (int i = 0; i < VerticesCount(); ++i) {
         if (graph[vertex][i])
             res.push_back(i);
     }
@@ -23,7 +23,7 @@ std::vector<int> MatrixGraph::GetNextVertices(int vertex) const {
 
 std::vector<int> MatrixGraph::GetPrevVertices(int vertex) const {
     std::vector<int> res;
-    for (int i = 0; i < VerticesCount(); ++i){
+    for (int i = 0; i < VerticesCount(); ++i) {
         if (graph[i][vertex])
             res.push_back(i);
     }

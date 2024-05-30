@@ -14,7 +14,7 @@ int ArcGraph::VerticesCount() const {
 
 std::vector<int> ArcGraph::GetNextVertices(int vertex) const {
     std::vector<int> res;
-    for (auto item : edges) {
+    for (auto item: edges) {
         if (item.first == vertex)
             res.push_back(item.second);
     }
@@ -24,7 +24,7 @@ std::vector<int> ArcGraph::GetNextVertices(int vertex) const {
 
 std::vector<int> ArcGraph::GetPrevVertices(int vertex) const {
     std::vector<int> res;
-    for (auto item : edges) {
+    for (auto item: edges) {
         if (item.second == vertex)
             res.push_back(item.first);
     }

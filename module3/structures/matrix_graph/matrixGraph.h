@@ -8,16 +8,18 @@
 #include <vector>
 #include "../IGraph.h"
 
-struct MatrixGraph : public IGraph{
+struct MatrixGraph : public IGraph {
 
-    explicit MatrixGraph(int n) : graph(n, std::vector<bool>(n, false)){}
+    explicit MatrixGraph(int n) : graph(n, std::vector<bool>(n, false)) {}
+
     explicit MatrixGraph(const IGraph &other_graph) {
         for (int i = 0; i < other_graph.VerticesCount(); ++i) {
-            for (auto j : other_graph.GetNextVertices(i)){
+            for (auto j: other_graph.GetNextVertices(i)) {
                 graph[i][j] = true;
             }
         }
     }
+
     ~MatrixGraph() override = default;
 
     void AddEdge(int from, int to) override;
