@@ -9,7 +9,6 @@
 #include "../IGraph.h"
 
 struct MatrixGraph : public IGraph {
-
     explicit MatrixGraph(int n) : graph(n, std::vector<bool>(n, false)) {}
 
     explicit MatrixGraph(const IGraph &other_graph) {
