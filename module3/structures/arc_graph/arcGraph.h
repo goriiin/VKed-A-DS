@@ -6,14 +6,15 @@
 #define MODULE3_ARCGRAPH_H
 
 
+#include <iostream>
 #include "../IGraph.h"
 
-class arc_graph : public IGraph{
+struct arc_graph : public IGraph{
     explicit arc_graph(int n) : count(n) {}
-    explicit arc_graph(const IGraph &other_graph) {
+    explicit arc_graph(const IGraph &other_graph) : count(other_graph.VerticesCount())  {
         for (int i = 0; i < other_graph.VerticesCount(); ++i) {
             for (auto j : other_graph.GetNextVertices(i)) {
-                graph.emplace_back(i, j);
+                edges.emplace_back(i, j);
             }
         }
     }
@@ -28,9 +29,9 @@ class arc_graph : public IGraph{
     [[nodiscard]] std::vector<int> GetPrevVertices(int vertex) const override;
 
 private:
-    std::vector<std::pair<int, int>> graph;
+    std::vector<std::pair<int, int>> edges;
     int count = 0;
-}
+};
 
 
 #endif //MODULE3_ARCGRAPH_H

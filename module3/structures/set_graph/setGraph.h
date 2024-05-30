@@ -9,7 +9,7 @@
 #include "../IGraph.h"
 #include <unordered_map>
 
-class set_graph : public IGraph{
+struct set_graph : public IGraph{
 
     explicit set_graph(int n): count(n){}
     explicit set_graph(const IGraph &other_graph) : count(other_graph.VerticesCount()) {

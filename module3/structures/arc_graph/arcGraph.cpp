@@ -5,7 +5,7 @@
 #include "arcGraph.h"
 
 void arc_graph::AddEdge(int from, int to) {
-    graph.emplace_back(from, to);
+    edges.emplace_back(from, to);
 }
 
 int arc_graph::VerticesCount() const {
@@ -14,7 +14,7 @@ int arc_graph::VerticesCount() const {
 
 std::vector<int> arc_graph::GetNextVertices(int vertex) const {
     std::vector<int> res;
-    for (auto item : graph) {
+    for (auto item : edges) {
         if (item.first == vertex)
             res.push_back(item.second);
     }
@@ -24,7 +24,7 @@ std::vector<int> arc_graph::GetNextVertices(int vertex) const {
 
 std::vector<int> arc_graph::GetPrevVertices(int vertex) const {
     std::vector<int> res;
-    for (auto item : graph) {
+    for (auto item : edges) {
         if (item.second == vertex)
             res.push_back(item.first);
     }
