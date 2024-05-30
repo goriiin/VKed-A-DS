@@ -7,16 +7,16 @@
 
 #include "../IGraph.h"
 
-struct list_graph : public IGraph {
-    explicit list_graph(int size) : graph(size) {}
+struct ListGraph : public IGraph {
+    explicit ListGraph(int size) : graph(size) {}
 
-    explicit list_graph(const IGraph &other_graph) {
+    explicit ListGraph(const IGraph &other_graph) {
         for (int i = 0; i < other_graph.VerticesCount(); ++i) {
             graph[i] = other_graph.GetNextVertices(i);
         }
     }
 
-    ~list_graph() override = default;
+    ~ListGraph() override = default;
 
     void AddEdge(int from, int to) override;
 

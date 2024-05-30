@@ -80,7 +80,7 @@ void bfs(const IGraph &graph, void (*callback)(int v)) {
 
 int main() {
     std::cout << "Begin" << std::endl;
-    list_graph graph(7);
+    ListGraph graph(7);
     graph.AddEdge(0, 1);
     graph.AddEdge(1, 0);
 
@@ -108,21 +108,21 @@ int main() {
 
 
 
-//    matrix_graph graph1(graph);
+//    MatrixGraph graph1(graph);
 //    dfs(graph1, [](int v) { std::cout << "[dfs] v=" << v << std::endl; });
 //
 //    std::cout << "-------------" << std::endl;
 //    bfs(graph1, [](int v) { std::cout << "[bfs] v=" << v << std::endl; });
 
 
-    set_graph graph2(graph);
+    SetGraph graph2(graph);
     dfs(graph2, [](int v) { std::cout << "[dfs] v=" << v << std::endl; });
 
     std::cout << "-------------" << std::endl;
     bfs(graph2, [](int v) { std::cout << "[bfs] v=" << v << std::endl; });
 
 
-//    arc_graph graph3(graph);
+//    ArcGraph graph3(graph);
 //    dfs(graph3, [](int v) { std::cout << "[dfs] v=" << v << std::endl; });
 //
 //    std::cout << "-------------" << std::endl;

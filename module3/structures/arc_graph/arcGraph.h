@@ -9,16 +9,16 @@
 #include <iostream>
 #include "../IGraph.h"
 
-struct arc_graph : public IGraph{
-    explicit arc_graph(int n) : count(n) {}
-    explicit arc_graph(const IGraph &other_graph) : count(other_graph.VerticesCount())  {
+struct ArcGraph: public IGraph{
+    explicit ArcGraph(int n) : count(n) {}
+    explicit ArcGraph(const IGraph &other_graph) : count(other_graph.VerticesCount())  {
         for (int i = 0; i < other_graph.VerticesCount(); ++i) {
             for (auto j : other_graph.GetNextVertices(i)) {
                 edges.emplace_back(i, j);
             }
         }
     }
-    ~arc_graph() override = default;
+    ~ArcGraph() override = default;
 
     void AddEdge(int from, int to) override;
 
