@@ -88,6 +88,8 @@ struct MatrixGraph {
 
         dist[from] = 0;
         q.insert({0, from});
+
+
         while (!q.empty()) {
             auto curr = q.begin()->second;
             q.erase(q.begin());
