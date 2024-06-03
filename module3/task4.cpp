@@ -1,15 +1,16 @@
 #include <iostream>
 #include <array>
 #include <unordered_map>
-#include <queue>
+#include <set>
+#include <vector>
 #include <unordered_set>
 
-int run(std::istream& in, std::ostream& out);
+void run(std::istream &in, std::ostream &out);
 
-int main(){
+int main() {
     run(std::cin, std::cout);
+    return 0;
 }
-
 
 const size_t LINE_SIZE = 4;
 const size_t FIELD_SIZE = LINE_SIZE * LINE_SIZE;
@@ -23,18 +24,11 @@ const field_array GOAL_STATE = {
         13, 14, 15, 0
 };
 
-const field_array EMPTY_STATE = {
-        0, 0, 0, 0,//2+1 % 3 == 0
-        0, 0, 0, 0,//5+1 % 3 == 0
-        0, 0, 0, 0,//8
-        0, 0, 0, 0//8
-};
-
 class field_state {
 public:
-    field_state() : state(), zero_pos(0), h(0), move(' ') {}
+    field_state() : state(), zero_pos(0), g(0), h(0), move(' ') {}
 
-    field_state(const field_array &arr, char m = ' ') : state(arr),  h(0), move(m) {
+    field_state(const field_array &arr, char m = ' ') : state(arr), g(0), h(0), move(m) {
         for (int i = 0; i < FIELD_SIZE; ++i) {
             if (state[i] == 0) {
                 zero_pos = i;
@@ -49,11 +43,15 @@ public:
     }
 
     bool operator<(const field_state &other) const {
-        return h > other.h;
+        if (g + h != other.g + other.h) {
+            return (g + h) < (other.g + other.h);
+        } else {
+            return move < other.move;
+        }
     }
 
     int get_f() const {
-        return h;
+        return g + h;
     }
 
     void calculate_heuristic() {
@@ -92,23 +90,13 @@ public:
         auto n = count_inversions();
         return (n + k) % 2 == 0;
     }
+
+    int g;
     int h;
     field_array state;
     int zero_pos;
     char move;
 private:
-    int count_inversions() const {
-        int inversions = 0;
-        for (int i = 0; i < FIELD_SIZE - 1; ++i) {
-            for (int j = i + 1; j < FIELD_SIZE; ++j) {
-                if (state[i] != 0 && state[j] != 0 && state[i] > state[j]) {
-                    inversions++;
-                }
-            }
-        }
-        return inversions;
-    }
-
     int manhattan_distance(int pos1, int pos2) const {
         int row1 = pos1 / LINE_SIZE;
         int col1 = pos1 % LINE_SIZE;
@@ -117,11 +105,31 @@ private:
         return abs(row1 - row2) + abs(col1 - col2);
     }
 
+    int count_inversions() const {
+        int inversions = 0;
+        for (int i = 0; i < FIELD_SIZE - 1; ++i) {
+            if (state[i] == 0) {
+                continue;
+            }
+            for (int j = i + 1; j < FIELD_SIZE; ++j) {
+                if (state[j] == 0) {
+                    continue;
+                }
+                if (state[i] > state[j]) {
+                    inversions++;
+                }
+            }
+        }
+        return inversions;
+    }
+
     field_state move_left() const {
         field_state next = *this;
         std::swap(next.state[zero_pos], next.state[zero_pos - 1]);
         next.zero_pos--;
+        next.g++;
         next.move = 'R';
+        next.calculate_heuristic();
         return next;
     }
 
@@ -129,7 +137,9 @@ private:
         field_state next = *this;
         std::swap(next.state[zero_pos], next.state[zero_pos + 1]);
         next.zero_pos++;
+        next.g++;
         next.move = 'L';
+        next.calculate_heuristic();
         return next;
     }
 
@@ -137,7 +147,9 @@ private:
         field_state next = *this;
         std::swap(next.state[zero_pos], next.state[zero_pos + LINE_SIZE]);
         next.zero_pos += LINE_SIZE;
+        next.g++;
         next.move = 'U';
+        next.calculate_heuristic();
         return next;
     }
 
@@ -145,19 +157,13 @@ private:
         field_state next = *this;
         std::swap(next.state[zero_pos], next.state[zero_pos - LINE_SIZE]);
         next.zero_pos -= LINE_SIZE;
+        next.g++;
         next.move = 'D';
+        next.calculate_heuristic();
         return next;
     }
 };
 
-// Структура для сравнения состояний в очереди с приоритетом
-struct field_state_comparator {
-    bool operator()(const field_state &a, const field_state &b) const {
-        return a.get_f() > b.get_f();
-    }
-};
-
-// Хеш-функция для field_state (необходима для unordered_set)
 struct field_state_hash {
     size_t operator()(const field_state &fs) const {
         size_t hash = 0;
@@ -170,33 +176,27 @@ struct field_state_hash {
 
 void a_star(const field_state &start, std::ostream &out) {
     const field_state goal(GOAL_STATE);
-    const field_state empty(EMPTY_STATE);
-
 
     if (!start.is_solve()) {
         out << "-1\n";
         return;
     }
 
-    std::priority_queue<field_state, std::vector<field_state>, field_state_comparator> q;
+    std::set<field_state> q;
     std::unordered_set<field_state, field_state_hash> visited;
     std::unordered_map<field_state, field_state, field_state_hash> parents;
 
-    q.push(start);
+    q.insert(start);
+    parents[start] = start;
 
     while (!q.empty()) {
-        field_state current = q.top();
-        q.pop();
+        auto it = q.begin();
+        field_state current = *it;
+        q.erase(it);
 
-        if (visited.find(current) != visited.end()) {
-            continue;
-        }
-
-        visited.insert(current);
-
-        if (current.state == GOAL_STATE) {
+        if (current == goal) {
             std::string path;
-            while (current.move != ' ') {
+            while (!(current == parents[current])) {
                 path = current.move + path;
                 current = parents[current];
             }
@@ -205,12 +205,24 @@ void a_star(const field_state &start, std::ostream &out) {
             return;
         }
 
+        if (visited.find(current) != visited.end()) {
+            continue;
+        }
+
+        visited.insert(current);
+
         for (auto &neighbor: current.get_next_vertices()) {
             if (visited.find(neighbor) == visited.end()) {
-
-                if (parents.find(neighbor) == parents.end()) {
+                int new_g = current.g + 1;
+                if (parents.find(neighbor) == parents.end() || new_g < neighbor.g) {
+                    neighbor.g = new_g;
                     parents[neighbor] = current;
-                    q.push(neighbor);
+
+                    if (q.find(neighbor) != q.end()) {
+                        q.erase(neighbor);
+                    }
+
+                    q.insert(neighbor);
                 }
             }
         }
@@ -218,13 +230,12 @@ void a_star(const field_state &start, std::ostream &out) {
     out << "-1\n";
 }
 
-int run(std::istream& in, std::ostream& out) {
+void run(std::istream &in, std::ostream &out) {
     field_array start_state;
     for (int i = 0; i < FIELD_SIZE; ++i) {
-        std::cin >> start_state[i];
+        in >> start_state[i];
     }
 
     field_state start(start_state);
     a_star(start, out);
-    return 0;
 }
