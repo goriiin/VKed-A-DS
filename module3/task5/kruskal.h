@@ -7,11 +7,13 @@
 
 #include <vector>
 #include <algorithm>
-#include "sd/edge/edge.h"
+#include "sd/graph/graph.h"
 #include "sd/dsu/dsu.h"
 
-void kruskal(std::vector<Edge>& edges, int graph_size, void (*callback)(const Edge&)){
-    DSU dsu(graph_size);
+void kruskal(Graph& graph, void (*callback)(const Edge&)){
+    DSU dsu(graph.vertices_count());
+
+    auto edges = graph.get_edges();
 
     std::sort(edges.begin(), edges.end(), [](const Edge& l, const Edge& r){
         return l.weight < r.weight;
