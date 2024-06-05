@@ -7,7 +7,6 @@
 
 
 struct Edge {
-    double from;
     double to;
     double weight;
 };
