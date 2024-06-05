@@ -2,10 +2,9 @@
 // Created by dmitry on 05.06.24.
 //
 
-#ifndef TASK5_DSU_H
-#define TASK5_DSU_H
+#ifndef TASK_5_DSU_H
+#define TASK_5_DSU_H
 
-#include <iostream>
 #include <vector>
 
 class DSU {
@@ -27,5 +26,4 @@ private:
     std::vector<int> rank;
 };
 
-
-#endif //TASK5_DSU_H
+#endif //TASK_5_DSU_H

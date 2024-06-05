@@ -4,7 +4,6 @@
 
 #include "dsu.h"
 
-
 void DSU::union_set(int v, int u) {
     int v_set = find_set(v);
     int u_set = find_set(u);
