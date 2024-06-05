@@ -7,7 +7,7 @@ int main() {
     int start_vert = 2, end_vert = 10, num_trials=10;
 
     for (int n = start_vert; n <= end_vert; ++n) {
-        std::cout << "n= " << n;
+        std::cout << "n=" << n << std::endl;
         run_experiment(n, num_trials);
     }
 

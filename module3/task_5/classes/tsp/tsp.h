@@ -10,14 +10,13 @@
 #include <limits>
 #include <stack>
 
-
-double tsp(const Graph& graph) {
+double tsp(const Graph &graph) {
     int V = graph.vertices_count();
     std::vector<bool> visited(V, false);
-    double minCost = std::numeric_limits<double>::max();
+    double min_cost = std::numeric_limits<double>::max();
 
     struct State {
-        int currPos;
+        int curr_pos;
         int count;
         double cost;
         int i;
@@ -27,18 +26,17 @@ double tsp(const Graph& graph) {
     stack.push({0, 1, 0.0, 0});
 
     while (!stack.empty()) {
-        auto& state = stack.top();
-        visited[state.currPos] = true;
+        auto &state = stack.top();
+        visited[state.curr_pos] = true;
 
         while (state.i < V) {
             if (!visited[state.i]) {
-                // Используем graph.get_weight() вместо adjMatrix
-                double newCost = state.cost + graph.get_weight(state.currPos, state.i);
-                stack.push({state.i, state.count + 1, newCost, 0});
+                double new_cost = state.cost + graph.get_weight(state.curr_pos, state.i);
+                stack.push({state.i, state.count + 1, new_cost, 0});
                 visited[state.i] = true;
-                state.currPos = state.i;
+                state.curr_pos = state.i;
                 state.count++;
-                state.cost = newCost;
+                state.cost = new_cost;
                 state.i = 0;
                 continue;
             }
@@ -46,14 +44,14 @@ double tsp(const Graph& graph) {
         }
 
         if (state.count == V) {
-            minCost = std::min(minCost, state.cost + graph.get_weight(state.currPos, 0));
+            min_cost = std::min(min_cost, state.cost + graph.get_weight(state.curr_pos, 0));
         }
 
-        visited[state.currPos] = false;
+        visited[state.curr_pos] = false;
         stack.pop();
     }
 
-    return minCost;
+    return min_cost;
 }
 
 

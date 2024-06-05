@@ -20,15 +20,10 @@ double kruskal(Graph& graph){
     });
     double total = 0;
     for (const auto &edge: edges) {
-        int v = dsu.find_set(edge.from);
-        int u = dsu.find_set(edge.to);
-
-        if (v == u) {
-            continue;
+        if (dsu.find_set(edge.to)!= dsu.find_set(edge.from)){
+            dsu.union_set(edge.from, edge.to);
+            total+=edge.weight;
         }
-
-        dsu.union_set(v, u);
-        total += edge.weight;
     }
     return total;
 }

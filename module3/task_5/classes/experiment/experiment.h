@@ -17,13 +17,16 @@ void run_experiment(int n_vertices, int num_trials = 10) {
 
     for (int i = 0; i < num_trials; ++i) {
         Graph graph(n_vertices);
-        double mst_weight =  kruskal(graph);
-
-        approximations.push_back(calculate_approximation(graph, mst_weight));
+        double mst_weight = kruskal(graph);
+        double optimal_distance = tsp(graph);
+        std::cout << "i=" << i << " mst: " << mst_weight << " optimal: " << optimal_distance << "\n";
+        approximations.push_back(calculate_approximation(optimal_distance, mst_weight));
     }
 
     auto stats = calculate_statistics(approximations);
-    std::cout << ", Mean: " << stats.first << ", StdDev: " << stats.second << std::endl;
+    std::cout << "Mean: " << stats.first << ", StdDev: " << stats.second << std::endl;
+    std::cout << "==========================================================\n";
+
 }
 
 #endif //TASK_5_EXPERIMENT_H

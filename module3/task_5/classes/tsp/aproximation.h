@@ -7,9 +7,8 @@
 
 #include <vector>
 
-double calculate_approximation(const Graph& graph, double mst_weight) {
-    std::vector<int> optimal_path;
-    double optimal_distance = tsp(graph);
-    return 2 * mst_weight / optimal_distance;
+double calculate_approximation(double optimal_distance, double mst_weight) {
+    return optimal_distance/ mst_weight;
 }
+
 #endif //TASK_5_APROXIMATION_H
